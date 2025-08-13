@@ -1,9 +1,9 @@
 use anyhow::Result;
-use std::env;
+use std::{env, path::PathBuf};
 
 use crate::git::repo::GitRepository;
 
-pub fn run(path: Option<&str>) -> Result<()> {
+pub fn run(path: Option<PathBuf>) -> Result<()> {
     let repo_path = match path {
         Some(p) => p.into(),
         None => env::current_dir()?,

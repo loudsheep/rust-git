@@ -1,4 +1,9 @@
+use std::path::PathBuf;
+
+use anyhow::{Result};
 use clap::{Parser, Subcommand};
+
+use crate::commands::init::run;
 mod commands;
 mod git;
 
@@ -12,15 +17,17 @@ struct Cli {
 
 #[derive(Debug, Subcommand)]
 enum Commands {
-    Init {},
+    Init { path: Option<PathBuf> },
 }
 
-fn main() {
+fn main() -> Result<()> {
     let args = Cli::parse();
 
     match args.command {
-        Commands::Init {} => {
-            println!("Initializing repository")
+        Commands::Init { path } => {
+            run(path)?;
         }
     }
+
+    Ok(())
 }

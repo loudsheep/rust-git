@@ -1,6 +1,5 @@
 use anyhow::{Context, Result};
-use std::fs;
-use std::io::BufRead;
+use std::fs::{self, create_dir};
 use std::path::{Path, PathBuf};
 
 #[derive(Debug)]
@@ -18,10 +17,14 @@ pub struct RepositoryConfig {
 impl GitRepository {
     pub fn new<P: AsRef<Path>>(path: P, force: bool) -> Result<Self> {
         let worktree = path.as_ref().to_path_buf();
-        let gitdir = worktree.join(".git");
+        let gitdir = worktree.join(".rust-git");
 
         if !(force || gitdir.is_dir()) {
-            anyhow::bail!("Not a Git repository: {}", worktree.display());
+            anyhow::bail!("Not a rust-git repository: {}", worktree.display());
+        }
+
+        if !gitdir.exists() {
+            create_dir(&gitdir)?;
         }
 
         let config_path = gitdir.join("config");
@@ -53,20 +56,20 @@ impl GitRepository {
 
     pub fn create<P: AsRef<Path>>(path: P) -> Result<Self> {
         let worktree = path.as_ref().to_path_buf();
+        let repo = GitRepository::new(&worktree, true)?;
 
         if worktree.exists() {
             if !worktree.is_dir() {
                 anyhow::bail!("{} is not a directory", worktree.display());
             }
-            if worktree.read_dir()?.next().is_some() {
-                anyhow::bail!("{} is not empty", worktree.display());
+            if repo.gitdir.read_dir()?.next().is_some() {
+                anyhow::bail!("{} is not empty", repo.gitdir.display());
             }
         } else {
             fs::create_dir_all(&worktree)
                 .with_context(|| format!("Failed to create directory {}", worktree.display()))?;
         }
 
-        let repo = GitRepository::new(&worktree, true)?;
 
         repo.create_dir("branches")?;
         repo.create_dir("objects")?;
