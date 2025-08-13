@@ -1,19 +1,26 @@
-use clap::Parser;
+use clap::{Parser, Subcommand};
+mod commands;
+mod git;
 
-#[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
-struct Args {
-    #[arg(short, long)]
-    name: String,
+#[derive(Debug, Parser)]
+#[command(name = "rust-git")]
+#[command(about = "A simple git vcs, but in rust", long_about = None)]
+struct Cli {
+    #[command(subcommand)]
+    command: Commands,
+}
 
-    #[arg(short, long, default_value_t = 1)]
-    count: u8,
+#[derive(Debug, Subcommand)]
+enum Commands {
+    Init {},
 }
 
 fn main() {
-    let args = Args::parse();
+    let args = Cli::parse();
 
-    for _ in 0..args.count {
-        println!("Hello {}!", args.name);
+    match args.command {
+        Commands::Init {} => {
+            println!("Initializing repository")
+        }
     }
 }
