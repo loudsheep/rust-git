@@ -1,9 +1,8 @@
 use std::path::PathBuf;
 
-use anyhow::{Result};
+use anyhow::Result;
 use clap::{Parser, Subcommand};
 
-use crate::commands::init::run;
 mod commands;
 mod git;
 
@@ -25,7 +24,7 @@ fn main() -> Result<()> {
 
     match args.command {
         Commands::Init { path } => {
-            run(path)?;
+            commands::init::run(path)?;
         }
     }
 

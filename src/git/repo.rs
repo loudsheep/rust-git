@@ -70,7 +70,6 @@ impl GitRepository {
                 .with_context(|| format!("Failed to create directory {}", worktree.display()))?;
         }
 
-
         repo.create_dir("branches")?;
         repo.create_dir("objects")?;
         repo.create_dir("refs/tags")?;
@@ -124,4 +123,26 @@ fn read_config(path: &Path) -> Result<RepositoryConfig> {
     Ok(RepositoryConfig {
         repository_format_version: version.unwrap_or(0),
     })
+}
+
+pub fn repo_find<P: AsRef<Path>>(path: P, required: bool) -> Result<Option<GitRepository>> {
+    let path = fs::canonicalize(path.as_ref())
+        .with_context(|| format!("Invalid path: {}", path.as_ref().display()))?;
+
+    if path.join(".rust-git").is_dir() {
+        return Ok(Some(GitRepository::new(&path, false)?));
+    }
+
+    let parent = path.parent().map(Path::to_path_buf);
+
+    match parent {
+        Some(parent_path) if parent_path != path => repo_find(parent_path, required),
+        _ => {
+            if required {
+                anyhow::bail!("No git directory found starting from {}", path.display());
+            } else {
+                Ok(None)
+            }
+        }
+    }
 }
