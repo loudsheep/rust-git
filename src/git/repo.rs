@@ -96,7 +96,7 @@ impl GitRepository {
         Ok(())
     }
 
-    fn repo_path(&self, path: &str) -> PathBuf {
+    pub fn repo_path(&self, path: &str) -> PathBuf {
         self.gitdir.join(path)
     }
 

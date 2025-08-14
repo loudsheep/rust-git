@@ -16,7 +16,25 @@ struct Cli {
 
 #[derive(Debug, Subcommand)]
 enum Commands {
-    Init { path: Option<PathBuf> },
+    Init {
+        path: Option<PathBuf>,
+    },
+
+    HashObject {
+        #[arg(short, long)]
+        write: bool,
+
+        #[arg(long, default_value = "blob")]
+        type_name: String,
+
+        file: PathBuf,
+    },
+
+    CatFile {
+        object_type: String,
+
+        object: String,
+    },
 }
 
 fn main() -> Result<()> {
@@ -25,6 +43,19 @@ fn main() -> Result<()> {
     match args.command {
         Commands::Init { path } => {
             commands::init::run(path)?;
+        }
+        Commands::HashObject {
+            write,
+            type_name,
+            file,
+        } => {
+            commands::hash_object::run(write, &type_name, file);
+        }
+        Commands::CatFile {
+            object_type,
+            object,
+        } => {
+            commands::cat_file::run(&object_type, &object);
         }
     }
 
