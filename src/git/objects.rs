@@ -1,6 +1,6 @@
 use anyhow::Context;
 use anyhow::Result;
-use clap::{ValueEnum};
+use clap::ValueEnum;
 use flate2::{Compression, read::ZlibDecoder, write::ZlibEncoder};
 use hex;
 use sha1::{Digest, Sha1};
@@ -9,6 +9,9 @@ use std::fs::File;
 use std::io::Read;
 use std::io::Write;
 
+use crate::git::kvlm::Kvlm;
+use crate::git::kvlm::kvlm_parse;
+use crate::git::kvlm::kvlm_serialize;
 use crate::git::repo::GitRepository;
 
 pub trait GitObject {
@@ -38,6 +41,10 @@ pub struct GitBlob {
     pub data: Vec<u8>,
 }
 
+pub struct GitCommit {
+    pub kvlm: Kvlm,
+}
+
 impl GitObject for GitBlob {
     fn serialize(&self) -> Result<Vec<u8>> {
         Ok(self.data.clone())
@@ -51,6 +58,21 @@ impl GitObject for GitBlob {
 
     fn init() -> Result<Self> {
         Ok(GitBlob { data: Vec::new() })
+    }
+}
+
+impl GitObject for GitCommit {
+    fn serialize(&self) -> Result<Vec<u8>> {
+        Ok(kvlm_serialize(&self.kvlm))
+    }
+
+    fn deserialize(data: &[u8]) -> Result<Self> {
+        let kvlm = kvlm_parse(data)?;
+        Ok(Self { kvlm })
+    }
+
+    fn init() -> Result<Self> {
+        Ok(Self { kvlm: Kvlm::new() })
     }
 }
 
@@ -121,8 +143,8 @@ pub fn object_read(repo: &GitRepository, sha: &str) -> Result<Box<dyn GitObject>
             Ok(Box::new(obj))
         }
         "Commit" => {
-            // You'll implement GitCommit later
-            Err(anyhow::anyhow!("Commit object not yet implemented"))
+            let obj = GitCommit::deserialize(content)?;
+            Ok(Box::new(obj))
         }
         "Tree" => Err(anyhow::anyhow!("Tree object not yet implemented")),
         "Tag" => Err(anyhow::anyhow!("Tag object not yet implemented")),
