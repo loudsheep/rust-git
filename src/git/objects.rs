@@ -1,5 +1,6 @@
 use anyhow::Context;
 use anyhow::Result;
+use clap::{ValueEnum};
 use flate2::{Compression, read::ZlibDecoder, write::ZlibEncoder};
 use hex;
 use sha1::{Digest, Sha1};
@@ -7,8 +8,6 @@ use std::fs;
 use std::fs::File;
 use std::io::Read;
 use std::io::Write;
-use std::path::Path;
-use std::path::PathBuf;
 
 use crate::git::repo::GitRepository;
 
@@ -27,8 +26,9 @@ pub trait GitObject {
     }
 }
 
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Debug)]
 pub enum GitObjectType {
-    Blob(GitBlob),
+    Blob,
     Commit,
     Tree,
     Tag,
@@ -54,14 +54,18 @@ impl GitObject for GitBlob {
     }
 }
 
-pub fn hash_object(
+pub fn object_find<'a>(repo: &'a GitRepository, name: &'a str, fmt: &'a GitObjectType) -> &'a str {
+    name
+}
+
+pub fn object_write(
     repo: &GitRepository,
     obj: &impl GitObject,
-    type_name: &str,
+    type_name: &GitObjectType,
     write: bool,
 ) -> Result<String> {
     let data = obj.serialize()?;
-    let header = format!("{} {}\0", type_name, data.len());
+    let header = format!("{:?} {}\0", &type_name, data.len());
     let store_data = [header.as_bytes(), &data[..]].concat();
 
     let mut hasher = Sha1::new();
@@ -88,12 +92,8 @@ pub fn hash_object(
     Ok(hash_hex)
 }
 
-pub fn cat_file(repo: &GitRepository, hash: &str) -> Result<GitObjectType> {
-    let path = repo
-        .gitdir
-        .join("objects")
-        .join(&hash[..2])
-        .join(&hash[2..]);
+pub fn object_read(repo: &GitRepository, sha: &str) -> Result<Box<dyn GitObject>> {
+    let path = repo.gitdir.join("objects").join(&sha[..2]).join(&sha[2..]);
 
     let compressed =
         fs::read(&path).with_context(|| format!("Failed to read object file at {:?}", path))?;
@@ -116,10 +116,16 @@ pub fn cat_file(repo: &GitRepository, hash: &str) -> Result<GitObjectType> {
         .context("Invalid object header: missing type")?;
 
     match type_name {
-        "blob" => Ok(GitObjectType::Blob(GitBlob::deserialize(content)?)),
-        "commit" => Ok(GitObjectType::Commit),
-        "tree" => Ok(GitObjectType::Tree),
-        "tag" => Ok(GitObjectType::Tag),
+        "Blob" => {
+            let obj = GitBlob::deserialize(content)?;
+            Ok(Box::new(obj))
+        }
+        "Commit" => {
+            // You'll implement GitCommit later
+            Err(anyhow::anyhow!("Commit object not yet implemented"))
+        }
+        "Tree" => Err(anyhow::anyhow!("Tree object not yet implemented")),
+        "Tag" => Err(anyhow::anyhow!("Tag object not yet implemented")),
         _ => Err(anyhow::anyhow!("Unknown object type: {}", type_name)),
     }
 }

@@ -3,6 +3,8 @@ use std::path::PathBuf;
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 
+use crate::git::objects::GitObjectType;
+
 mod commands;
 mod git;
 
@@ -16,23 +18,28 @@ struct Cli {
 
 #[derive(Debug, Subcommand)]
 enum Commands {
-    Init {
-        path: Option<PathBuf>,
-    },
-
+    /// Initialize a repository
+    Init { path: Option<PathBuf> },
+    /// Compute object ID and optionally creates a blob from a file
     HashObject {
+        /// Actually write the object into the database
         #[arg(short, long)]
         write: bool,
 
-        #[arg(long, default_value = "blob")]
-        type_name: String,
+        /// Specify the type
+        #[arg(value_enum, short, long, default_value = "blob")]
+        type_name: GitObjectType,
 
+        /// Read object from this file
         file: PathBuf,
     },
-
+    /// Provide content of repository object
     CatFile {
-        object_type: String,
+        /// Specify the type
+        #[arg(value_enum)]
+        object_type: GitObjectType,
 
+        /// The object to display
         object: String,
     },
 }
@@ -49,13 +56,13 @@ fn main() -> Result<()> {
             type_name,
             file,
         } => {
-            commands::hash_object::run(write, &type_name, file);
+            commands::hash_object::run(write, &type_name, file)?;
         }
         Commands::CatFile {
             object_type,
             object,
         } => {
-            commands::cat_file::run(&object_type, &object);
+            commands::cat_file::run(&object_type, &object)?;
         }
     }
 
