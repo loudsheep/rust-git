@@ -57,6 +57,15 @@ enum Commands {
         /// A tree-ish object.
         tree: String,
     },
+    /// Checkout a commit inside of a directory.
+    Checkout {
+        /// The commit or tree to checkout.
+        commit: String,
+
+        // TODO
+        // The EMPTY directory to checkout on.
+        // path: PathBuf,
+    },
 }
 
 fn main() -> Result<()> {
@@ -84,6 +93,9 @@ fn main() -> Result<()> {
         }
         Commands::LsTree { recursive, tree } => {
             commands::ls_tree::run(&tree, recursive)?;
+        }
+        Commands::Checkout { commit } => {
+            commands::checkout::run(&commit)?;
         }
     }
 

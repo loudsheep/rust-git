@@ -39,7 +39,7 @@ pub fn kvlm_parse(raw: &[u8]) -> Result<Kvlm> {
         return Ok(kvlm);
     }
 
-    let mut next_new_line = |from: usize| -> Result<usize> {
+    let next_new_line = |from: usize| -> Result<usize> {
         raw[from..]
             .iter()
             .position(|&b| b == b'\n')

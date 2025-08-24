@@ -10,7 +10,7 @@ pub fn run(object_type: &GitObjectType, object: &str) -> Result<()> {
 
     let sha = object_find(&repo, object, &object_type);
 
-    let (obj_type, obj) = object_read(&repo, &sha)?;
+    let (_, obj) = object_read(&repo, &sha)?;
 
     let data = obj.serialize()?;
     std::io::stdout().write_all(&data)?;
