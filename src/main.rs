@@ -42,6 +42,12 @@ enum Commands {
         /// The object to display
         object: String,
     },
+    /// Display history of a given commit.
+    Log {
+        /// Commit to start at.
+        #[arg(default_value = "HEAD")]
+        commit: String,
+    },
 }
 
 fn main() -> Result<()> {
@@ -63,6 +69,9 @@ fn main() -> Result<()> {
             object,
         } => {
             commands::cat_file::run(&object_type, &object)?;
+        }
+        Commands::Log { commit } => {
+            commands::log::run(&commit)?;
         }
     }
 

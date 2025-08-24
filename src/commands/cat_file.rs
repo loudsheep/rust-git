@@ -1,5 +1,5 @@
 use crate::git::{
-    objects::{GitObjectType, object_read, object_find},
+    objects::{GitObjectType, object_find, object_read},
     repo::repo_find,
 };
 use anyhow::Result;
@@ -10,7 +10,7 @@ pub fn run(object_type: &GitObjectType, object: &str) -> Result<()> {
 
     let sha = object_find(&repo, object, &object_type);
 
-    let obj = object_read(&repo, &sha)?;
+    let (obj_type, obj) = object_read(&repo, &sha)?;
 
     let data = obj.serialize()?;
     std::io::stdout().write_all(&data)?;

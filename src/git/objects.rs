@@ -4,6 +4,7 @@ use clap::ValueEnum;
 use flate2::{Compression, read::ZlibDecoder, write::ZlibEncoder};
 use hex;
 use sha1::{Digest, Sha1};
+use std::any::Any;
 use std::fs;
 use std::fs::File;
 use std::io::Read;
@@ -27,6 +28,8 @@ pub trait GitObject {
     {
         Err(anyhow::anyhow!("Init not implemented for this object type"))
     }
+
+    fn as_any(&self) -> &dyn Any;
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Debug)]
@@ -59,6 +62,10 @@ impl GitObject for GitBlob {
     fn init() -> Result<Self> {
         Ok(GitBlob { data: Vec::new() })
     }
+    
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
 }
 
 impl GitObject for GitCommit {
@@ -73,6 +80,10 @@ impl GitObject for GitCommit {
 
     fn init() -> Result<Self> {
         Ok(Self { kvlm: Kvlm::new() })
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
 
@@ -114,7 +125,7 @@ pub fn object_write(
     Ok(hash_hex)
 }
 
-pub fn object_read(repo: &GitRepository, sha: &str) -> Result<Box<dyn GitObject>> {
+pub fn object_read(repo: &GitRepository, sha: &str) -> Result<(GitObjectType, Box<dyn GitObject>)> {
     let path = repo.gitdir.join("objects").join(&sha[..2]).join(&sha[2..]);
 
     let compressed =
@@ -140,11 +151,11 @@ pub fn object_read(repo: &GitRepository, sha: &str) -> Result<Box<dyn GitObject>
     match type_name {
         "Blob" => {
             let obj = GitBlob::deserialize(content)?;
-            Ok(Box::new(obj))
+            Ok((GitObjectType::Blob, Box::new(obj)))
         }
         "Commit" => {
             let obj = GitCommit::deserialize(content)?;
-            Ok(Box::new(obj))
+            Ok((GitObjectType::Commit, Box::new(obj)))
         }
         "Tree" => Err(anyhow::anyhow!("Tree object not yet implemented")),
         "Tag" => Err(anyhow::anyhow!("Tag object not yet implemented")),
