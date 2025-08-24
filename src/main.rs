@@ -48,6 +48,15 @@ enum Commands {
         #[arg(default_value = "HEAD")]
         commit: String,
     },
+    /// Pretty-print a tree object.
+    LsTree {
+        /// Recurse into sub-trees
+        #[arg(short)]
+        recursive: bool,
+
+        /// A tree-ish object.
+        tree: String,
+    },
 }
 
 fn main() -> Result<()> {
@@ -72,6 +81,9 @@ fn main() -> Result<()> {
         }
         Commands::Log { commit } => {
             commands::log::run(&commit)?;
+        }
+        Commands::LsTree { recursive, tree } => {
+            commands::ls_tree::run(&tree, recursive)?;
         }
     }
 

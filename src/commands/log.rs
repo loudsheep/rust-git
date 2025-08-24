@@ -2,7 +2,7 @@ use anyhow::{Context, Result};
 use std::collections::HashSet;
 
 use crate::git::{
-    objects::{GitBlob, GitCommit, GitObjectType, object_read, object_write},
+    objects::{GitCommit, GitObjectType, object_read},
     repo::{GitRepository, repo_find},
 };
 
@@ -13,7 +13,7 @@ pub fn run(sha: &str) -> Result<()> {
     println!("  node[shape=rect]");
 
     let mut seen = HashSet::<String>::new();
-    walk(&repo, sha, &mut seen);
+    walk(&repo, sha, &mut seen)?;
 
     println!("}}");
     Ok(())

@@ -14,6 +14,7 @@ use crate::git::kvlm::Kvlm;
 use crate::git::kvlm::kvlm_parse;
 use crate::git::kvlm::kvlm_serialize;
 use crate::git::repo::GitRepository;
+use crate::git::tree::GitTree;
 
 pub trait GitObject {
     fn serialize(&self) -> Result<Vec<u8>>;
@@ -62,7 +63,7 @@ impl GitObject for GitBlob {
     fn init() -> Result<Self> {
         Ok(GitBlob { data: Vec::new() })
     }
-    
+
     fn as_any(&self) -> &dyn Any {
         self
     }
@@ -87,7 +88,11 @@ impl GitObject for GitCommit {
     }
 }
 
-pub fn object_find<'a>(repo: &'a GitRepository, name: &'a str, fmt: &'a GitObjectType) -> &'a str {
+pub fn object_find<'a>(
+    _repo: &'a GitRepository,
+    name: &'a str,
+    _fmt: &'a GitObjectType,
+) -> &'a str {
     name
 }
 
@@ -157,7 +162,10 @@ pub fn object_read(repo: &GitRepository, sha: &str) -> Result<(GitObjectType, Bo
             let obj = GitCommit::deserialize(content)?;
             Ok((GitObjectType::Commit, Box::new(obj)))
         }
-        "Tree" => Err(anyhow::anyhow!("Tree object not yet implemented")),
+        "Tree" => {
+            let obj = GitTree::deserialize(content)?;
+            Ok((GitObjectType::Tree, Box::new(obj)))
+        }
         "Tag" => Err(anyhow::anyhow!("Tag object not yet implemented")),
         _ => Err(anyhow::anyhow!("Unknown object type: {}", type_name)),
     }
