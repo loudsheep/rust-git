@@ -1,6 +1,6 @@
 use std::fs;
 
-use anyhow::{Result};
+use anyhow::Result;
 
 use crate::git::{
     objects::{GitObject, GitObjectType, GitTag, object_find, object_write},
@@ -31,7 +31,7 @@ pub fn list_tags() -> Result<()> {
 pub fn create_tag(name: &str, target: &str, create_tag_object: bool) -> Result<()> {
     let repo = repo_find(".", true)?.unwrap();
 
-    let sha = object_find(&repo, target, &GitObjectType::Tag);
+    let sha = object_find(&repo, target, Some(GitObjectType::Tag))?;
 
     if create_tag_object {
         let mut tag = GitTag::init()?;

@@ -8,7 +8,7 @@ use std::{io::Write, str};
 pub fn run(object_type: &GitObjectType, object: &str) -> Result<()> {
     let repo = repo_find(".", true)?.unwrap();
 
-    let sha = object_find(&repo, object, &object_type);
+    let sha = object_find(&repo, object, Some(*object_type))?;
 
     let (_, obj) = object_read(&repo, &sha)?;
 

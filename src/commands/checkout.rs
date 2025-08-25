@@ -58,8 +58,8 @@ fn checkout_tree(repo: &GitRepository, sha: &str, path: &Path) -> Result<()> {
 pub fn run(commit: &str) -> Result<()> {
     let repo = repo_find(".", true)?.unwrap();
 
-    let sha = object_find(&repo, commit, &GitObjectType::Blob);
-    let (obj_type, obj) = object_read(&repo, sha)?;
+    let sha = object_find(&repo, commit, Some(GitObjectType::Blob))?;
+    let (obj_type, obj) = object_read(&repo, &sha)?;
 
     if obj_type != GitObjectType::Commit {
         bail!("Object {sha} is not a commit");

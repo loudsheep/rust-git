@@ -1,4 +1,4 @@
-use std::path::{Path};
+use std::path::Path;
 
 use anyhow::{Context, Result, bail};
 
@@ -59,7 +59,7 @@ fn ls_tree(repo: &GitRepository, sha: &str, recursive: bool, prefix: &Path) -> R
 pub fn run(tree: &str, recursive: bool) -> Result<()> {
     let repo = repo_find(".", true)?.unwrap();
 
-    let sha = object_find(&repo, tree, &GitObjectType::Tree);
+    let sha = object_find(&repo, tree, Some(GitObjectType::Tree))?;
 
-    ls_tree(&repo, sha, recursive, Path::new(""))
+    ls_tree(&repo, &sha, recursive, Path::new(""))
 }
