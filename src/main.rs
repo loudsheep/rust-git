@@ -125,8 +125,13 @@ fn main() -> Result<()> {
             name,
             object,
         } => {
-            
-        },
+            if let Some(name) = name {
+                let target = object.unwrap_or_else(|| "HEAD".to_string());
+                commands::tag::create_tag(&name, &target, annotate)?;
+            } else {
+                commands::tag::list_tags()?;
+            }
+        }
     }
 
     Ok(())

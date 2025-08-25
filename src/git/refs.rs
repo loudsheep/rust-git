@@ -105,3 +105,13 @@ pub fn collect_refs(base: &Path, prefix: &str) -> Result<Vec<(String, String)>> 
 
     Ok(refs)
 }
+
+pub fn ref_create(repo: &GitRepository, ref_name: &str, sha: &str) -> Result<()> {
+    let path = repo.gitdir.join("refs").join(ref_name);
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent)?;
+    }
+    fs::write(&path, format!("{sha}\n"))
+        .with_context(|| format!("Failed to write ref {:?}", path))?;
+    Ok(())
+}
