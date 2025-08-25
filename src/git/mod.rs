@@ -3,3 +3,4 @@ pub mod objects;
 pub mod kvlm;
 pub mod tree;
 pub mod refs;
+pub mod index;
