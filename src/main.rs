@@ -19,7 +19,9 @@ struct Cli {
 #[derive(Debug, Subcommand)]
 enum Commands {
     /// Initialize a repository
-    Init { path: Option<PathBuf> },
+    Init {
+        path: Option<PathBuf>,
+    },
     /// Compute object ID and optionally creates a blob from a file
     HashObject {
         /// Actually write the object into the database
@@ -61,11 +63,14 @@ enum Commands {
     Checkout {
         /// The commit or tree to checkout.
         commit: String,
-
         // TODO
         // The EMPTY directory to checkout on.
         // path: PathBuf,
     },
+    RevParse {
+        name: String,
+    },
+    ShowRef {},
 }
 
 fn main() -> Result<()> {
@@ -96,6 +101,12 @@ fn main() -> Result<()> {
         }
         Commands::Checkout { commit } => {
             commands::checkout::run(&commit)?;
+        }
+        Commands::RevParse { name } => {
+            commands::rev_parse::run(&name)?;
+        }
+        Commands::ShowRef {} => {
+            commands::show_ref::run()?;
         }
     }
 
