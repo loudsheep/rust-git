@@ -1,5 +1,6 @@
 use anyhow::Context;
 use anyhow::Result;
+use anyhow::bail;
 use clap::ValueEnum;
 use flate2::{Compression, read::ZlibDecoder, write::ZlibEncoder};
 use hex;
@@ -13,6 +14,8 @@ use std::io::Write;
 use crate::git::kvlm::Kvlm;
 use crate::git::kvlm::kvlm_parse;
 use crate::git::kvlm::kvlm_serialize;
+use crate::git::refs::resolve_ref;
+use crate::git::refs::resolve_sha;
 use crate::git::repo::GitRepository;
 use crate::git::tree::GitTree;
 
@@ -111,12 +114,34 @@ impl GitObject for GitTag {
     }
 }
 
-pub fn object_find<'a>(
-    _repo: &'a GitRepository,
-    name: &'a str,
-    _fmt: &'a GitObjectType,
-) -> &'a str {
-    name
+pub fn object_find(repo: &GitRepository, name: &str, fmt: Option<GitObjectType>) -> Result<String> {
+    if name == "HEAD" {
+        let head = fs::read_to_string(repo.gitdir.join("HEAD")).context("Could not read HEAD")?;
+
+        if head.starts_with("ref: ") {
+            let ref_path = head[5..].trim();
+            return resolve_ref(&repo, &ref_path);
+        } else {
+            return Ok(head.trim().to_string());
+        }
+    }
+
+    let sha = resolve_sha(repo, name)?;
+
+    if let Some(expected) = fmt {
+        let (got_type, obj) = object_read(&repo, &sha)?;
+
+        if got_type != expected {
+            bail!(
+                "Object {} is not of expected type {:?}, got {:?}",
+                sha,
+                expected,
+                got_type
+            );
+        }
+    }
+
+    Ok(sha)
 }
 
 pub fn object_write(

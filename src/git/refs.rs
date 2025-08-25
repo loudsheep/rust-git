@@ -44,7 +44,7 @@ pub fn ref_parse(repo: &GitRepository, name: &str) -> Result<String> {
 }
 
 /// Expand abbreviated SHA by searching objects
-fn resolve_sha(repo: &GitRepository, short: &str) -> Result<String> {
+pub fn resolve_sha(repo: &GitRepository, short: &str) -> Result<String> {
     if short.len() == 40 {
         return Ok(short.to_string());
     }
@@ -73,7 +73,7 @@ fn resolve_sha(repo: &GitRepository, short: &str) -> Result<String> {
 }
 
 /// Resolve a symbolic ref like "refs/heads/main"
-fn resolve_ref(repo: &GitRepository, refname: &str) -> Result<String> {
+pub fn resolve_ref(repo: &GitRepository, refname: &str) -> Result<String> {
     let ref_path = repo.gitdir.join(refname);
     if ref_path.exists() {
         let sha = fs::read_to_string(&ref_path)?.trim().to_string();
