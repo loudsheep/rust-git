@@ -19,9 +19,7 @@ struct Cli {
 #[derive(Debug, Subcommand)]
 enum Commands {
     /// Initialize a repository
-    Init {
-        path: Option<PathBuf>,
-    },
+    Init { path: Option<PathBuf> },
     /// Compute object ID and optionally creates a blob from a file
     HashObject {
         /// Actually write the object into the database
@@ -91,6 +89,8 @@ enum Commands {
         #[arg(default_value = "HEAD")]
         object: Option<String>,
     },
+    /// List all the stage files
+    LsFiles {},
 }
 
 fn main() -> Result<()> {
@@ -139,6 +139,9 @@ fn main() -> Result<()> {
             } else {
                 commands::tag::list_tags()?;
             }
+        }
+        Commands::LsFiles {} => {
+            commands::ls_files::run()?;
         }
     }
 
