@@ -6,3 +6,4 @@ pub mod ls_tree;
 pub mod checkout;
 pub mod show_ref;
 pub mod rev_parse;
+pub mod tag;

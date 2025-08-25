@@ -71,6 +71,18 @@ enum Commands {
         name: String,
     },
     ShowRef {},
+    Tag {
+        /// Whether to create a tag object
+        #[arg(short, long)]
+        annotate: bool,
+
+        /// The new tag's name  
+        name: Option<String>,
+
+        /// The object the new tag will point to
+        #[arg(default_value = "HEAD")]
+        object: Option<String>,
+    },
 }
 
 fn main() -> Result<()> {
@@ -108,6 +120,13 @@ fn main() -> Result<()> {
         Commands::ShowRef {} => {
             commands::show_ref::run()?;
         }
+        Commands::Tag {
+            annotate,
+            name,
+            object,
+        } => {
+            
+        },
     }
 
     Ok(())

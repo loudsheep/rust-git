@@ -49,6 +49,10 @@ pub struct GitCommit {
     pub kvlm: Kvlm,
 }
 
+pub struct GitTag {
+    pub kvlm: Kvlm,
+}
+
 impl GitObject for GitBlob {
     fn serialize(&self) -> Result<Vec<u8>> {
         Ok(self.data.clone())
@@ -70,6 +74,25 @@ impl GitObject for GitBlob {
 }
 
 impl GitObject for GitCommit {
+    fn serialize(&self) -> Result<Vec<u8>> {
+        Ok(kvlm_serialize(&self.kvlm))
+    }
+
+    fn deserialize(data: &[u8]) -> Result<Self> {
+        let kvlm = kvlm_parse(data)?;
+        Ok(Self { kvlm })
+    }
+
+    fn init() -> Result<Self> {
+        Ok(Self { kvlm: Kvlm::new() })
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+}
+
+impl GitObject for GitTag {
     fn serialize(&self) -> Result<Vec<u8>> {
         Ok(kvlm_serialize(&self.kvlm))
     }
