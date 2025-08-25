@@ -4,45 +4,6 @@ use anyhow::{Context, Result, bail};
 
 use crate::git::repo::GitRepository;
 
-/// Resolve a "name" (HEAD, branch, tag, SHA) to a full 40-hex SHA1.
-pub fn ref_parse(repo: &GitRepository, name: &str) -> Result<String> {
-    if name.chars().all(|c| c.is_ascii_hexdigit()) && (4..=40).contains(&name.len()) {
-        return resolve_sha(repo, name);
-    }
-
-    match name {
-        "HEAD" => {
-            let head_path = repo.gitdir.join("HEAD");
-            let data = fs::read_to_string(&head_path)
-                .with_context(|| format!("Failed to read {:?}", head_path))?;
-
-            if data.starts_with("red: ") {
-                let refname = data[5..].trim();
-                return resolve_ref(repo, refname);
-            } else {
-                return Ok(data.trim().to_string());
-            }
-        }
-        _ => {
-            let ref_path = repo.gitdir.join(name);
-            if ref_path.exists() {
-                let sha = fs::read_to_string(&ref_path)?.trim().to_string();
-                return Ok(sha);
-            }
-
-            for prefix in &["refs/heads", "refs/tags", "refs/remotes"] {
-                let ref_path = repo.gitdir.join(prefix).join(name);
-                if ref_path.exists() {
-                    let sha = fs::read_to_string(&ref_path)?.trim().to_string();
-                    return Ok(sha);
-                }
-            }
-        }
-    }
-
-    bail!("Not a valid object name: {name}")
-}
-
 /// Expand abbreviated SHA by searching objects
 pub fn resolve_sha(repo: &GitRepository, short: &str) -> Result<String> {
     if short.len() == 40 {

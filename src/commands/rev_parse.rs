@@ -1,11 +1,11 @@
 use anyhow::Result;
 
-use crate::git::{refs::ref_parse, repo::repo_find};
+use crate::git::{objects::{object_find, GitObjectType}, repo::repo_find};
 
-pub fn run(name: &str) -> Result<()> {
+pub fn run(name: &str, fmt: Option<GitObjectType>) -> Result<()> {
     let repo = repo_find(".", true)?.unwrap();
 
-    let sha: String = ref_parse(&repo, name)?;
+    let sha = object_find(&repo, name, fmt)?;
     println!("{sha}");
 
     Ok(())

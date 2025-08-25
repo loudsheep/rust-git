@@ -67,10 +67,18 @@ enum Commands {
         // The EMPTY directory to checkout on.
         // path: PathBuf,
     },
+    /// Parse revision (or other objects) identifiers
     RevParse {
+        /// Specify the expected type
+        #[arg(long, value_enum)]
+        git_type: Option<GitObjectType>,
+
+        /// The name to parse
         name: String,
     },
+    /// List references.
     ShowRef {},
+    /// List and create tags
     Tag {
         /// Whether to create a tag object
         #[arg(short, long)]
@@ -114,8 +122,8 @@ fn main() -> Result<()> {
         Commands::Checkout { commit } => {
             commands::checkout::run(&commit)?;
         }
-        Commands::RevParse { name } => {
-            commands::rev_parse::run(&name)?;
+        Commands::RevParse { name, git_type } => {
+            commands::rev_parse::run(&name, git_type)?;
         }
         Commands::ShowRef {} => {
             commands::show_ref::run()?;

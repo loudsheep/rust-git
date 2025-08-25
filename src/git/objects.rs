@@ -114,19 +114,47 @@ impl GitObject for GitTag {
     }
 }
 
-pub fn object_find(repo: &GitRepository, name: &str, fmt: Option<GitObjectType>) -> Result<String> {
-    if name == "HEAD" {
-        let head = fs::read_to_string(repo.gitdir.join("HEAD")).context("Could not read HEAD")?;
+/// Resolve a "name" (HEAD, branch, tag, SHA) to a full 40-hex SHA1.
+pub fn object_resolve(repo: &GitRepository, name: &str) -> Result<String> {
+    if name.chars().all(|c| c.is_ascii_hexdigit()) && (4..=40).contains(&name.len()) {
+        return resolve_sha(repo, name);
+    }
 
-        if head.starts_with("ref: ") {
-            let ref_path = head[5..].trim();
-            return resolve_ref(&repo, &ref_path);
-        } else {
-            return Ok(head.trim().to_string());
+    match name {
+        "HEAD" => {
+            let head_path = repo.gitdir.join("HEAD");
+            let data = fs::read_to_string(&head_path)
+                .with_context(|| format!("Failed to read {:?}", head_path))?;
+
+            if data.starts_with("ref: ") {
+                let refname = data[5..].trim();
+                return resolve_ref(repo, refname);
+            } else {
+                return Ok(data.trim().to_string());
+            }
+        }
+        _ => {
+            let ref_path = repo.gitdir.join(name);
+            if ref_path.exists() {
+                let sha = fs::read_to_string(&ref_path)?.trim().to_string();
+                return Ok(sha);
+            }
+
+            for prefix in &["refs/heads", "refs/tags", "refs/remotes"] {
+                let ref_path = repo.gitdir.join(prefix).join(name);
+                if ref_path.exists() {
+                    let sha = fs::read_to_string(&ref_path)?.trim().to_string();
+                    return Ok(sha);
+                }
+            }
         }
     }
 
-    let sha = resolve_sha(repo, name)?;
+    bail!("Not a valid object name: {name}")
+}
+
+pub fn object_find(repo: &GitRepository, name: &str, fmt: Option<GitObjectType>) -> Result<String> {
+    let sha = object_resolve(repo, name)?;
 
     if let Some(expected) = fmt {
         let (got_type, obj) = object_read(&repo, &sha)?;
