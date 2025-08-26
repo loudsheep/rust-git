@@ -8,3 +8,4 @@ pub mod show_ref;
 pub mod rev_parse;
 pub mod tag;
 pub mod ls_files;
+pub mod check_ignore;

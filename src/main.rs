@@ -91,6 +91,11 @@ enum Commands {
     },
     /// List all the stage files
     LsFiles {},
+    /// Check path(s) against ignore rules.
+    CheckIgnore {
+        /// Paths to check
+        paths: Vec<PathBuf>,
+    },
 }
 
 fn main() -> Result<()> {
@@ -142,6 +147,9 @@ fn main() -> Result<()> {
         }
         Commands::LsFiles {} => {
             commands::ls_files::run()?;
+        }
+        Commands::CheckIgnore { paths } => {
+            commands::check_ignore::run(&paths)?;
         }
     }
 
