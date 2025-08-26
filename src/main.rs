@@ -96,6 +96,8 @@ enum Commands {
         /// Paths to check
         paths: Vec<PathBuf>,
     },
+    /// Show the working tree status.
+    Status {},
 }
 
 fn main() -> Result<()> {
@@ -150,6 +152,9 @@ fn main() -> Result<()> {
         }
         Commands::CheckIgnore { paths } => {
             commands::check_ignore::run(&paths)?;
+        }
+        Commands::Status {} => {
+            commands::status::run()?;
         }
     }
 
