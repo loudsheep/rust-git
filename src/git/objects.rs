@@ -230,19 +230,19 @@ pub fn object_read(repo: &GitRepository, sha: &str) -> Result<(GitObjectType, Bo
         .context("Invalid object header: missing type")?;
 
     match type_name {
-        "Blob" => {
+        "blob" => {
             let obj = GitBlob::deserialize(content)?;
             Ok((GitObjectType::Blob, Box::new(obj)))
         }
-        "Commit" => {
+        "commit" => {
             let obj = GitCommit::deserialize(content)?;
             Ok((GitObjectType::Commit, Box::new(obj)))
         }
-        "Tree" => {
+        "tree" => {
             let obj = GitTree::deserialize(content)?;
             Ok((GitObjectType::Tree, Box::new(obj)))
         }
-        "Tag" => Err(anyhow::anyhow!("Tag object not yet implemented")),
+        "tag" => Err(anyhow::anyhow!("Tag object not yet implemented")),
         _ => Err(anyhow::anyhow!("Unknown object type: {}", type_name)),
     }
 }

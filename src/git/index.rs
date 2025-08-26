@@ -31,6 +31,7 @@ pub fn read_index(repo: &GitRepository) -> Result<Vec<GitIndexEntry>> {
         .with_context(|| format!("Could not open index at {:?}", index_path))?;
 
     let mut signature = [0u8; 4];
+    f.read_exact(&mut signature)?;
     if &signature != b"DIRC" {
         bail!("Invalid index signature: {:?}", signature);
     }

@@ -17,7 +17,7 @@ pub struct RepositoryConfig {
 impl GitRepository {
     pub fn new<P: AsRef<Path>>(path: P, force: bool) -> Result<Self> {
         let worktree = path.as_ref().to_path_buf();
-        let gitdir = worktree.join(".rust-git");
+        let gitdir = worktree.join(".git");
 
         if !(force || gitdir.is_dir()) {
             anyhow::bail!("Not a rust-git repository: {}", worktree.display());
@@ -129,7 +129,7 @@ pub fn repo_find<P: AsRef<Path>>(path: P, required: bool) -> Result<Option<GitRe
     let path = fs::canonicalize(path.as_ref())
         .with_context(|| format!("Invalid path: {}", path.as_ref().display()))?;
 
-    if path.join(".rust-git").is_dir() {
+    if path.join(".git").is_dir() {
         return Ok(Some(GitRepository::new(&path, false)?));
     }
 

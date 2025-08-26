@@ -76,7 +76,7 @@ pub fn run(commit: &str) -> Result<()> {
     for entry in fs::read_dir(&repo.worktree)? {
         let entry = entry?;
 
-        if entry.file_name() == ".rust-git" {
+        if entry.file_name() == ".git" {
             continue;
         }
 

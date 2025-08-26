@@ -1,11 +1,15 @@
 use std::{
-    collections::HashSet, fs, path::{Path, PathBuf}
+    collections::HashSet,
+    fs,
+    path::{Path, PathBuf},
 };
 
 use anyhow::{Context, Result};
 
 use crate::git::{
-    ignore::{check_ignore, gitignore_read}, index::read_index, repo::{repo_find, GitRepository}
+    ignore::{check_ignore, gitignore_read},
+    index::read_index,
+    repo::{GitRepository, repo_find},
 };
 
 pub fn run() -> Result<()> {
@@ -27,12 +31,14 @@ pub fn run() -> Result<()> {
         tracked.insert(PathBuf::from(&entry.path));
     }
 
-    println!("Tracked files:");
-    for path in &tracked {
-        println!("  {}", path.display());
+    if !tracked.is_empty() {
+        println!("\nTracked files:");
+        for path in &tracked {
+            println!("  {}", path.display());
+        }
     }
 
-    println!("\nUntracked files:");
+    let mut untracked = Vec::new();
     for path in worktree_files(&repo.worktree)? {
         let rel = path.strip_prefix(&repo.worktree).unwrap();
 
@@ -42,15 +48,28 @@ pub fn run() -> Result<()> {
         if check_ignore(&rules, &rel.to_string_lossy())? {
             continue;
         }
-
-        println!("  {}", rel.display());
+        untracked.push(rel.to_path_buf());
     }
 
-    println!("\nIgnored files:");
+    if !untracked.is_empty() {
+        println!("\nUntracked files:");
+        for path in &untracked {
+            println!("  {}", path.display());
+        }
+    }
+
+    let mut ignored = Vec::new();
     for path in worktree_files(&repo.worktree)? {
         let rel = path.strip_prefix(&repo.worktree).unwrap();
         if check_ignore(&rules, &rel.to_string_lossy())? {
-            println!("  {}", rel.display());
+            ignored.push(rel.to_path_buf());
+        }
+    }
+
+    if !ignored.is_empty() {
+        println!("\nIgnored files:");
+        for path in &ignored {
+            println!("  {}", path.display());
         }
     }
 
@@ -90,7 +109,7 @@ fn collect_files(base: &Path, dir: &Path, files: &mut Vec<PathBuf>) -> Result<()
 
         if path.is_dir() {
             // Skip .git directory
-            if path.ends_with(".rust-git") {
+            if path.ends_with(".git") {
                 continue;
             }
             collect_files(base, &path, files)?;
