@@ -27,7 +27,7 @@ fn mode_to_type(mode: &str) -> Result<&'static str> {
 fn ls_tree(repo: &GitRepository, sha: &str, recursive: bool, prefix: &Path) -> Result<()> {
     let (obj_type, obj) = object_read(&repo, sha)?;
 
-    if obj_type == GitObjectType::Tree {
+    if obj_type == GitObjectType::tree {
         let tree = obj
             .as_any()
             .downcast_ref::<GitTree>()
@@ -59,7 +59,7 @@ fn ls_tree(repo: &GitRepository, sha: &str, recursive: bool, prefix: &Path) -> R
 pub fn run(tree: &str, recursive: bool) -> Result<()> {
     let repo = repo_find(".", true)?.unwrap();
 
-    let sha = object_find(&repo, tree, Some(GitObjectType::Tree))?;
+    let sha = object_find(&repo, tree, Some(GitObjectType::tree))?;
 
     ls_tree(&repo, &sha, recursive, Path::new(""))
 }

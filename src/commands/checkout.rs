@@ -10,7 +10,7 @@ use crate::git::{
 
 fn checkout_tree(repo: &GitRepository, sha: &str, path: &Path) -> Result<()> {
     let (otype, obj) = object_read(repo, sha)?;
-    if otype != GitObjectType::Tree {
+    if otype != GitObjectType::tree {
         bail!("Object {sha} is not a tree");
     }
 
@@ -32,7 +32,7 @@ fn checkout_tree(repo: &GitRepository, sha: &str, path: &Path) -> Result<()> {
             m if m.starts_with("10") || m.starts_with("12") => {
                 let (_, obj) = object_read(repo, &entry_sha)?;
 
-                if otype != GitObjectType::Blob {
+                if otype != GitObjectType::blob {
                     bail!("Tree entry {} is not a blob", entry.path);
                 }
                 let blob = obj
@@ -58,10 +58,10 @@ fn checkout_tree(repo: &GitRepository, sha: &str, path: &Path) -> Result<()> {
 pub fn run(commit: &str) -> Result<()> {
     let repo = repo_find(".", true)?.unwrap();
 
-    let sha = object_find(&repo, commit, Some(GitObjectType::Blob))?;
+    let sha = object_find(&repo, commit, Some(GitObjectType::blob))?;
     let (obj_type, obj) = object_read(&repo, &sha)?;
 
-    if obj_type != GitObjectType::Commit {
+    if obj_type != GitObjectType::commit {
         bail!("Object {sha} is not a commit");
     }
 

@@ -11,10 +11,10 @@ pub fn run(write: bool, object_type: &GitObjectType, file: PathBuf) -> Result<()
 
     // For now, only support blob like WYAG’s early chapters
     match object_type {
-        GitObjectType::Blob => {},
-        GitObjectType::Commit => anyhow::bail!("Unsupported object type: {:?}", &object_type),
-        GitObjectType::Tree => anyhow::bail!("Unsupported object type: {:?}", &object_type),
-        GitObjectType::Tag => anyhow::bail!("Unsupported object type: {:?}", &object_type),
+        GitObjectType::blob => {},
+        GitObjectType::commit => anyhow::bail!("Unsupported object type: {:?}", &object_type),
+        GitObjectType::tree => anyhow::bail!("Unsupported object type: {:?}", &object_type),
+        GitObjectType::tag => anyhow::bail!("Unsupported object type: {:?}", &object_type),
     }
 
     let data = std::fs::read(file)?;

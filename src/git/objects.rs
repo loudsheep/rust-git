@@ -38,10 +38,10 @@ pub trait GitObject {
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Debug)]
 pub enum GitObjectType {
-    Blob,
-    Commit,
-    Tree,
-    Tag,
+    blob,
+    commit,
+    tree,
+    tag,
 }
 
 pub struct GitBlob {
@@ -232,15 +232,15 @@ pub fn object_read(repo: &GitRepository, sha: &str) -> Result<(GitObjectType, Bo
     match type_name {
         "blob" => {
             let obj = GitBlob::deserialize(content)?;
-            Ok((GitObjectType::Blob, Box::new(obj)))
+            Ok((GitObjectType::blob, Box::new(obj)))
         }
         "commit" => {
             let obj = GitCommit::deserialize(content)?;
-            Ok((GitObjectType::Commit, Box::new(obj)))
+            Ok((GitObjectType::commit, Box::new(obj)))
         }
         "tree" => {
             let obj = GitTree::deserialize(content)?;
-            Ok((GitObjectType::Tree, Box::new(obj)))
+            Ok((GitObjectType::tree, Box::new(obj)))
         }
         "tag" => Err(anyhow::anyhow!("Tag object not yet implemented")),
         _ => Err(anyhow::anyhow!("Unknown object type: {}", type_name)),

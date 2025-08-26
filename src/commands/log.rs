@@ -26,7 +26,7 @@ fn walk(repo: &GitRepository, sha: &str, seen: &mut HashSet<String>) -> Result<(
 
     let (obj_type, obj) = object_read(repo, sha)?;
     let commit = match obj_type {
-        GitObjectType::Commit => {
+        GitObjectType::commit => {
             let commit = obj
                 .as_any()
                 .downcast_ref::<GitCommit>()
