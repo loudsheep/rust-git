@@ -1,8 +1,7 @@
 use anyhow::{Context, Result, bail};
-use byteorder::{BigEndian, ReadBytesExt};
+use byteorder::{BigEndian, WriteBytesExt, ReadBytesExt};
 use std::fs::File;
-use std::io::{Read, Seek, SeekFrom};
-use std::path::PathBuf;
+use std::io::{Read, Seek, SeekFrom, Write};
 
 use crate::git::repo::GitRepository;
 
@@ -97,4 +96,49 @@ pub fn read_index(repo: &GitRepository) -> Result<Vec<GitIndexEntry>> {
     }
 
     Ok(entries)
+}
+
+pub fn write_index(repo: &GitRepository, entries: &[GitIndexEntry]) -> Result<()> {
+    let index_path = repo.gitdir.join("index");
+    let mut f = File::create(&index_path)?;
+
+    // headerr
+    f.write_all(b"DIRC")?; // signature
+    f.write_u32::<BigEndian>(2)?; // version
+    f.write_u32::<BigEndian>(entries.len() as u32)?;
+
+    // entries
+    for e in entries {
+        f.write_u32::<BigEndian>(e.ctime)?;
+        f.write_u32::<BigEndian>(0)?;
+        f.write_u32::<BigEndian>(e.mtime)?;
+        f.write_u32::<BigEndian>(0)?;
+
+        f.write_u32::<BigEndian>(e.dev)?;
+        f.write_u32::<BigEndian>(e.ino)?;
+        f.write_u32::<BigEndian>(e.mode)?;
+        f.write_u32::<BigEndian>(e.uid)?;
+        f.write_u32::<BigEndian>(e.gid)?;
+        f.write_u32::<BigEndian>(e.size)?;
+
+        // sha1 (hex string back to raw 20 bytes)
+        let sha_bytes = hex::decode(&e.sha)?;
+        f.write_all(&sha_bytes)?;
+
+        // flags
+        f.write_u16::<BigEndian>(e.flags)?;
+
+        // path + null terminator
+        f.write_all(e.path.as_bytes())?;
+        f.write_all(&[0])?;
+
+        // pad to multiple of 8 bytes
+        let entry_len = 62 + e.path.len() + 1;
+        let padding = (8 - (entry_len % 8)) % 8;
+        if padding > 0 {
+            f.write_all(&vec![0u8; padding])?;
+        }
+    }
+
+    Ok(())
 }
