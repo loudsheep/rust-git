@@ -168,8 +168,10 @@ fn main() -> Result<()> {
         }
         Commands::Rm { paths } => {
             commands::rm::run(&paths)?;
-        },
-        Commands::Add { paths } => todo!(),
+        }
+        Commands::Add { paths } => {
+            commands::add::run(&paths)?;
+        }
     }
 
     Ok(())
