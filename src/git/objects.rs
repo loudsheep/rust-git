@@ -157,7 +157,7 @@ pub fn object_find(repo: &GitRepository, name: &str, fmt: Option<GitObjectType>)
     let sha = object_resolve(repo, name)?;
 
     if let Some(expected) = fmt {
-        let (got_type, obj) = object_read(&repo, &sha)?;
+        let (got_type, _) = object_read(&repo, &sha)?;
 
         if got_type != expected {
             bail!(
@@ -172,9 +172,21 @@ pub fn object_find(repo: &GitRepository, name: &str, fmt: Option<GitObjectType>)
     Ok(sha)
 }
 
+pub fn object_hash(repo: &GitRepository, data: Vec<u8>, type_name: &GitObjectType) -> Result<String> {
+
+    let obj: Box<dyn GitObject> = match &type_name {
+        GitObjectType::blob => Box::new(GitBlob::deserialize(&data)?),
+        GitObjectType::commit => Box::new(GitCommit::deserialize(&data)?),
+        GitObjectType::tree => Box::new(GitTree::deserialize(&data)?),
+        GitObjectType::tag => Box::new(GitTag::deserialize(&data)?),
+    };
+
+    return object_write(&repo, obj.as_ref(), &type_name, true);
+} 
+
 pub fn object_write(
     repo: &GitRepository,
-    obj: &impl GitObject,
+    obj: &dyn GitObject,
     type_name: &GitObjectType,
     write: bool,
 ) -> Result<String> {
