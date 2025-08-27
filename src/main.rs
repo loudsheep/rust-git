@@ -108,6 +108,12 @@ enum Commands {
         /// Files to add
         paths: Vec<PathBuf>,
     },
+    /// Record changes to the repository.
+    Commit {
+        /// Message to associate with this commit.
+        #[arg(short)]
+        message: String,
+    },
 }
 
 fn main() -> Result<()> {
@@ -172,6 +178,9 @@ fn main() -> Result<()> {
         Commands::Add { paths } => {
             commands::add::run(&paths)?;
         }
+        Commands::Commit { message } => {
+            
+        },
     }
 
     Ok(())

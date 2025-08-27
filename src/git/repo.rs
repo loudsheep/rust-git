@@ -1,4 +1,6 @@
 use anyhow::{Context, Result};
+use ini::Ini;
+use std::env;
 use std::fs::{self, create_dir};
 use std::path::{Path, PathBuf};
 
@@ -145,4 +147,42 @@ pub fn repo_find<P: AsRef<Path>>(path: P, required: bool) -> Result<Option<GitRe
             }
         }
     }
+}
+
+pub fn gitconfig_read() -> Result<Ini> {
+    let xdg_config_home = env::var("XDG_CONFIG_HOME")
+        .unwrap_or_else(|_| format!("{}/.config", env::var("HOME").unwrap()));
+
+    let configfiles = vec![
+        PathBuf::from(format!("{xdg_config_home}/git/config")),
+        PathBuf::from(format!("{}/.gitconfig", env::var("HOME").unwrap())),
+    ];
+
+    let mut merged = Ini::new();
+
+    for path in configfiles {
+        if path.exists() {
+            if let Ok(cfg) = Ini::load_from_file(&path) {
+                for (sec, prop) in &cfg {
+                    let section = sec.clone();
+                    for (k, v) in prop.iter() {
+                        merged
+                            .with_section(section.clone())
+                            .set(k.clone(), v.clone());
+                    }
+                }
+            }
+        }
+    }
+
+    Ok(merged)
+}
+
+pub fn gitconfig_user_get(config: &Ini) -> Option<String> {
+    if let Some(section) = config.section(Some("user")) {
+        if let (Some(name), Some(email)) = (section.get("name"), section.get("email")) {
+            return Some(format!("{name} <{email}>"));
+        }
+    }
+    None
 }

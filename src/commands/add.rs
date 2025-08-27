@@ -6,7 +6,7 @@ use crate::{
     commands::rm::rm,
     git::{
         index::{GitIndexEntry, read_index, write_index},
-        objects::{GitBlob, GitObjectType, object_write},
+        objects::{GitBlob, GitObjectType, object_hash, object_write},
         repo::{GitRepository, repo_find},
     },
 };
@@ -14,15 +14,10 @@ use crate::{
 pub fn run(paths: &[PathBuf]) -> Result<()> {
     let repo = repo_find(".", true)?.unwrap();
 
-    add(&repo, paths, true, false)
+    add(&repo, paths)
 }
 
-pub fn add(
-    repo: &GitRepository,
-    paths: &[PathBuf],
-    delete: bool,
-    skip_missing: bool,
-) -> Result<()> {
+pub fn add(repo: &GitRepository, paths: &[PathBuf]) -> Result<()> {
     rm(repo, paths, false, true)?;
 
     let worktree = repo.worktree.canonicalize()?;
@@ -46,8 +41,8 @@ pub fn add(
 
     for (abspath, relpath) in clean_paths {
         let data = fs::read(&abspath)?;
-        let blob = GitBlob { data };
-        let sha = object_write(&repo, &blob, &GitObjectType::blob, true)?;
+
+        let sha = object_hash(&repo, data, &GitObjectType::blob)?;
 
         let meta = fs::metadata(&abspath)?;
 
