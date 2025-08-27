@@ -101,7 +101,7 @@ enum Commands {
     /// Remove files from the working tree and the index.
     Rm {
         /// Files to remove
-        paths: Vec<String>,
+        paths: Vec<PathBuf>,
     },
     /// Add files contents to the index.
     Add {

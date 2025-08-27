@@ -10,12 +10,20 @@ use crate::git::{
 pub fn run(paths: &[PathBuf]) -> Result<()> {
     let repo = repo_find(".", true)?.unwrap();
 
+    let worktree = repo.worktree.canonicalize()?;
+
     let rules = gitignore_read(&repo)?;
     for path in paths {
-        let path_str = path.to_str().context("Invalid path encoding")?;
+        // Normalize to repo-relative path
+        let abs = path.canonicalize()?;
+        let rel = abs
+            .strip_prefix(&worktree)
+            .with_context(|| format!("Path {abs:?} not inside repo"))?;
 
-        if check_ignore(&rules, path_str)? {
-            println!("{path_str}");
+        let rel_str = rel.to_string_lossy();
+
+        if check_ignore(&rules, &rel_str)? {
+            println!("{rel_str}");
         }
     }
 
