@@ -7,7 +7,7 @@ pub fn run() -> Result<()> {
 
     let index = read_index(&repo)?;
 
-    for entry in &index {
+    for entry in &index.entries {
         println!("{}", entry.path);
     }
 

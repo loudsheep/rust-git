@@ -1,5 +1,5 @@
 use anyhow::{Context, Result, bail};
-use byteorder::{BigEndian, WriteBytesExt, ReadBytesExt};
+use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 use std::fs::File;
 use std::io::{Read, Seek, SeekFrom, Write};
 
@@ -20,10 +20,17 @@ pub struct GitIndexEntry {
     pub path: String,
 }
 
-pub fn read_index(repo: &GitRepository) -> Result<Vec<GitIndexEntry>> {
+#[derive(Debug)]
+pub struct GitIndex {
+    pub entries: Vec<GitIndexEntry>,
+}
+
+pub fn read_index(repo: &GitRepository) -> Result<GitIndex> {
     let index_path = repo.gitdir.join("index");
     if !index_path.exists() {
-        return Ok(Vec::new());
+        return Ok(GitIndex {
+            entries: Vec::new(),
+        });
     }
 
     let mut f = File::open(&index_path)
@@ -95,20 +102,20 @@ pub fn read_index(repo: &GitRepository) -> Result<Vec<GitIndexEntry>> {
         });
     }
 
-    Ok(entries)
+    Ok(GitIndex { entries })
 }
 
-pub fn write_index(repo: &GitRepository, entries: &[GitIndexEntry]) -> Result<()> {
+pub fn write_index(repo: &GitRepository, index: &GitIndex) -> Result<()> {
     let index_path = repo.gitdir.join("index");
     let mut f = File::create(&index_path)?;
 
     // headerr
     f.write_all(b"DIRC")?; // signature
     f.write_u32::<BigEndian>(2)?; // version
-    f.write_u32::<BigEndian>(entries.len() as u32)?;
+    f.write_u32::<BigEndian>(index.entries.len() as u32)?;
 
     // entries
-    for e in entries {
+    for e in &index.entries {
         f.write_u32::<BigEndian>(e.ctime)?;
         f.write_u32::<BigEndian>(0)?;
         f.write_u32::<BigEndian>(e.mtime)?;

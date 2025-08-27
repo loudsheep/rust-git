@@ -68,14 +68,14 @@ pub fn gitignore_read(repo: &GitRepository) -> Result<GitIgnore> {
     }
 
     let index = read_index(repo)?;
-    for entry in &index {
+    for entry in &index.entries {
         if entry.path == ".gitignore" || entry.path.ends_with("/.gitignore") {
             let dir_name = Path::new(&entry.path)
                 .parent()
                 .map(|p| p.to_string_lossy().to_string())
                 .unwrap_or_default();
 
-            let (obj_type, obj) = object_read(repo, &entry.sha)?;
+            let (_, obj) = object_read(repo, &entry.sha)?;
             let contents = String::from_utf8(obj.serialize()?)?;
             let lines: Vec<&str> = contents.lines().collect();
             gi.scoped.insert(dir_name, gitignore_parse(&lines));

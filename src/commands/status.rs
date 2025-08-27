@@ -27,7 +27,7 @@ pub fn run() -> Result<()> {
     let rules = gitignore_read(&repo)?;
 
     let mut tracked: HashSet<PathBuf> = HashSet::new();
-    for entry in &index {
+    for entry in &index.entries {
         tracked.insert(PathBuf::from(&entry.path));
     }
 
