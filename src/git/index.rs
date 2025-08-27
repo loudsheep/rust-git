@@ -5,7 +5,7 @@ use std::io::{Read, Seek, SeekFrom, Write};
 
 use crate::git::repo::GitRepository;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct GitIndexEntry {
     pub ctime: u32,
     pub mtime: u32,

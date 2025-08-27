@@ -10,3 +10,5 @@ pub mod tag;
 pub mod ls_files;
 pub mod check_ignore;
 pub mod status;
+pub mod rm;
+pub mod add;

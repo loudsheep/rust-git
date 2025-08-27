@@ -98,6 +98,16 @@ enum Commands {
     },
     /// Show the working tree status.
     Status {},
+    /// Remove files from the working tree and the index.
+    Rm {
+        /// Files to remove
+        paths: Vec<String>,
+    },
+    /// Add files contents to the index.
+    Add {
+        /// Files to add
+        paths: Vec<PathBuf>,
+    },
 }
 
 fn main() -> Result<()> {
@@ -156,6 +166,10 @@ fn main() -> Result<()> {
         Commands::Status {} => {
             commands::status::run()?;
         }
+        Commands::Rm { paths } => {
+            commands::rm::run(&paths)?;
+        },
+        Commands::Add { paths } => todo!(),
     }
 
     Ok(())
