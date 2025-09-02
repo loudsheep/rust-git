@@ -179,8 +179,8 @@ fn main() -> Result<()> {
             commands::add::run(&paths)?;
         }
         Commands::Commit { message } => {
-            
-        },
+            commands::commit::run(&message)?;
+        }
     }
 
     Ok(())

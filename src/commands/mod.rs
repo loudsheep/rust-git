@@ -12,3 +12,4 @@ pub mod check_ignore;
 pub mod status;
 pub mod rm;
 pub mod add;
+pub mod commit;
