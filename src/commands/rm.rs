@@ -34,17 +34,18 @@ pub fn rm(repo: &GitRepository, paths: &[PathBuf], delete: bool, skip_missing: b
     let mut remove_files = Vec::new();
 
     for e in &index.entries {
-        let full_path = worktree.join(&e.path);
-        if relpaths.contains(&full_path) {
-            remove_files.push(full_path);
+        let entry_path = PathBuf::from(&e.path);
+        if relpaths.contains(&entry_path) {
+            remove_files.push(worktree.join(&entry_path));
         } else {
             kept_entries.push(e.clone());
         }
     }
 
-    for ap in &relpaths {
-        if !remove_files.contains(ap) && !skip_missing {
-            bail!("Cannot remove paths not in the index: {:?}", ap);
+    for relpath in &relpaths {
+        let found_in_index = index.entries.iter().any(|e| PathBuf::from(&e.path) == *relpath);
+        if !found_in_index && !skip_missing {
+            bail!("Cannot remove paths not in the index: {:?}", relpath);
         }
     }
 

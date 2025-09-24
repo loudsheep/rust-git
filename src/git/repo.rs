@@ -150,12 +150,22 @@ pub fn repo_find<P: AsRef<Path>>(path: P, required: bool) -> Result<Option<GitRe
 }
 
 pub fn gitconfig_read() -> Result<Ini> {
-    let xdg_config_home = env::var("XDG_CONFIG_HOME")
-        .unwrap_or_else(|_| format!("{}/.config", env::var("HOME").unwrap()));
+    let xdg_config_home = env::var("XDG_CONFIG_HOME").unwrap_or_else(|_| {
+        match env::var("HOME") {
+            Ok(home) => format!("{}/.config", home),
+            Err(_) => {
+                // Fallback to current directory if HOME is not set
+                ".config".to_string()
+            }
+        }
+    });
 
     let configfiles = vec![
         PathBuf::from(format!("{xdg_config_home}/git/config")),
-        PathBuf::from(format!("{}/.gitconfig", env::var("HOME").unwrap())),
+        PathBuf::from(match env::var("HOMEPATH") {
+            Ok(home) => format!("{}/.gitconfig", home),
+            Err(_) => "~/.gitconfig".to_string(),
+        }),
     ];
 
     let mut merged = Ini::new();
@@ -168,7 +178,7 @@ pub fn gitconfig_read() -> Result<Ini> {
                     for (k, v) in prop.iter() {
                         merged
                             .with_section(section.clone())
-                            .set(k.clone(), v.clone());
+                            .set(k, v);
                     }
                 }
             }

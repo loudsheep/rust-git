@@ -68,7 +68,7 @@ pub fn collect_refs(base: &Path, prefix: &str) -> Result<Vec<(String, String)>> 
 }
 
 pub fn ref_create(repo: &GitRepository, ref_name: &str, sha: &str) -> Result<()> {
-    let path = repo.gitdir.join("refs").join(ref_name);
+    let path = repo.gitdir.join(ref_name);
     if let Some(parent) = path.parent() {
         fs::create_dir_all(parent)?;
     }
