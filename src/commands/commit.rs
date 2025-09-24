@@ -28,7 +28,11 @@ pub fn run(message: &str) -> Result<()> {
         let target = fs::read_to_string(&head_ref)?.trim().to_string();
         if target.starts_with("ref:") {
             let refname = target.strip_prefix("ref: ").unwrap();
-            Some(resolve_ref(&repo, refname)?)
+            // Try to resolve the ref, but it's OK if it doesn't exist for first commit
+            match resolve_ref(&repo, refname) {
+                Ok(sha) => Some(sha),
+                Err(_) => None, // First commit, no parent
+            }
         } else if target.len() == 40 {
             Some(target)
         } else {
@@ -75,7 +79,9 @@ pub fn run(message: &str) -> Result<()> {
             fs::write(&head_ref, format!("{commit_sha}\n"))?;
         }
     } else {
-        fs::write(&head_ref, format!("{commit_sha}\n"))?;
+        // Create default HEAD pointing to refs/heads/master
+        fs::write(&head_ref, "ref: refs/heads/master\n")?;
+        ref_create(&repo, "heads/master", &commit_sha)?;
     }
 
     println!("[{}] {}", &commit_sha[..7], message.trim());

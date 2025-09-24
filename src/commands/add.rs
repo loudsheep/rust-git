@@ -6,7 +6,7 @@ use crate::{
     commands::rm::rm,
     git::{
         index::{GitIndexEntry, read_index, write_index},
-        objects::{GitBlob, GitObjectType, object_hash, object_write},
+        objects::{GitObjectType, object_hash},
         repo::{GitRepository, repo_find},
     },
 };
